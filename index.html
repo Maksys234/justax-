@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justax.Space - AI Language Learning Universe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Базовые стили --- */
+        body { 
+          font-family: 'Inter', sans-serif; 
+          background-color: #00001a; 
+          color: #e0e0e0; 
+          overflow-x: hidden;
+          margin: 0;
+        }
+
+        .font-space { font-family: 'Space Grotesk', sans-serif; }
+
+        /* --- Контейнеры и заголовок --- */
+        #content-overlay { position: relative; z-index: 10; }
+        #headline-wrapper { 
+          display: flex; 
+          flex-direction: column; 
+          justify-content: center; 
+          align-items: center; 
+          height: 100vh; 
+          min-height: 700px;
+          text-align: center; 
+          position: relative; 
+        }
+        #dynamic-headline { transition: opacity 0.5s ease-in-out; z-index: 5; }
+        #dynamic-headline.fade-out { opacity: 0; }
+
+        .space-logo {
+            background: linear-gradient(120deg, #8a2be2, #4169e1, #00ced1, #9acd32);
+            background-size: 400% 400%; animation: nebula-flow 6s ease-in-out infinite;
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            display: inline-block; margin-left: 0.1rem;
+        }
+        @keyframes nebula-flow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* --- Система планет (управляется JS) --- */
+        #planet-system {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            overflow: hidden; /* Гарантирует, что планеты не вылетят за пределы */
+        }
+
+        /* Контейнер, который двигает JS */
+        .planet-container {
+            position: absolute;
+            width: var(--size, 100px);
+            height: var(--size, 100px);
+            will-change: transform; 
+            cursor: pointer;
+        }
+
+        /* Внутренняя обертка для плавного масштабирования при наведении */
+        .planet-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .planet-container:hover .planet-wrapper {
+            transform: scale(1.2);
+            z-index: 100;
+        }
+
+        .planet-body {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            background-image: var(--planet-gradient);
+            box-shadow: 
+                inset 8px -4px 20px rgba(0,0,0,0.5),
+                0 0 25px -4px var(--glow-color, #fff);
+            animation: self-rotate 40s linear infinite;
+        }
+
+        .planet-body::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.25), rgba(255,255,255,0) 50%);
+        }
+
+        @keyframes self-rotate { from { background-position-x: 0%; } to { background-position-x: 200%; } }
+
+        /* Стили для флагов */
+        .flag-container {
+            position: absolute; 
+            top: -25%; 
+            left: 50%; 
+            transform: translateX(-50%);
+            width: 50%; 
+            height: 50%; 
+            min-width: 30px; 
+            min-height: 30px;
+            transition: transform 0.4s ease;
+        }
+        .flag-container img {
+            width: 100%; 
+            border-radius: 50%; 
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 10px rgba(255,255,255,0.4);
+        }
+        .planet-container:hover .flag-container {
+            transform: translateX(-50%) translateY(-15%) scale(1.1);
+        }
+
+        /* --- Стили для контента и фона --- */
+        #stars-bg { position: fixed; top:0; left:0; width:100%; height:100%; z-index:0; background: #00001a; }
+        .star { position: absolute; background: white; border-radius: 50%; animation: twinkle 5s infinite ease-in-out; }
+        @keyframes twinkle { 50% { opacity: 0.3; } }
+
+        .hologram-block { background: #0a0f2c; border: 1px solid rgba(0, 191, 255, 0.3); padding: 2.5rem 2rem; border-radius: 1rem; text-align: center; position: relative; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .hologram-block::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #00bfff, transparent); animation: scanline 4s linear infinite; }
+        .hologram-block:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 0 35px rgba(0, 191, 255, 0.4); }
+        .hologram-icon { margin: 0 auto 1.5rem auto; width: 80px; height: 80px; display: grid; place-items: center; filter: drop-shadow(0 0 10px rgba(0, 191, 255, 0.7)); transition: filter 0.3s ease; }
+        .hologram-block:hover .hologram-icon { filter: drop-shadow(0 0 15px rgba(0, 191, 255, 1)); }
+        @keyframes scanline { 0% { transform: translateY(-10px); } 50% { transform: translateY(220px); } 100% { transform: translateY(-10px); } }
+        .glass-container { background: rgba(10, 10, 30, 0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .fade-in-section { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        .fade-in-section.is-visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div id="stars-bg"></div>
+    <div id="main-container">
+        <div id="content-overlay">
+            <header class="py-6 px-4 sm:px-8 fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-sm">
+                <div class="container mx-auto flex justify-between items-center">
+                    <h1 class="text-3xl font-bold font-space tracking-wider text-white">
+                        <span>Justax</span><span class="space-logo">.Space</span>
+                    </h1>
+                    <button class="bg-cyan-500 hover:bg-cyan-400 text-white font-bold py-2 px-6 rounded-lg transition-all shadow-[0_0_15px_rgba(0,255,255,0.5)] hover:shadow-[0_0_25px_rgba(0,255,255,0.8)] transform hover:scale-105">Launch App</button>
+                </div>
+            </header>
+
+            <main>
+                <div id="headline-wrapper">
+                    <div class="relative z-10 text-center">
+                        <h2 id="dynamic-headline" class="text-5xl md:text-7xl font-bold font-space tracking-tight text-white mb-4">Learn languages with AI</h2>
+                        <p class="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto">Your personal AI tutor for mastering any language, from any language.</p>
+                    </div>
+                    <div id="planet-system"></div>
+                </div>
+                
+                <div class="relative z-10 bg-[#00001a] pb-12">
+                    <section class="py-20 fade-in-section">
+                        <h3 class="text-4xl font-bold text-center mb-16 font-space">A Universe of AI-Powered Features</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4">
+                            <div class="hologram-block"><div class="hologram-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div><div><h4 class="text-2xl font-bold mb-2">Personalized Plan</h4><p class="text-gray-400">Our AI analyzes your level and creates a unique learning path that adapts to your progress.</p></div></div>
+                            <div class="hologram-block" style="animation-delay: 2s"><div class="hologram-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg></div><div><h4 class="text-2xl font-bold mb-2">AI Conversation</h4><p class="text-gray-400">Have natural conversations with our AI. Practice speaking and listening anytime, on any topic.</p></div></div>
+                            <div class="hologram-block" style="animation-delay: 1s"><div class="hologram-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg></div><div><h4 class="text-2xl font-bold mb-2">AI-Powered Content</h4><p class="text-gray-400">Generate texts and stories tailored to your level, with instant feedback and corrections.</p></div></div>
+                        </div>
+                    </section>
+                    
+                    <section class="py-16 fade-in-section">
+                        <div class="max-w-3xl mx-auto glass-container p-8 md:p-12 rounded-xl">
+                            <h3 class="text-4xl font-bold font-space text-center mb-4">Start Your Free Trial</h3>
+                            <p class="text-gray-400 text-center mb-8 text-lg">Get instant access to the platform. No credit card required.</p>
+                            <div class="text-center">
+                                <a href="#register" class="inline-block bg-cyan-500 hover:bg-cyan-400 text-white font-bold py-4 px-10 rounded-lg transition-all text-xl shadow-[0_0_20px_rgba(0,255,255,0.4)] hover:shadow-[0_0_30px_rgba(0,255,255,0.6)] transform hover:scale-105">Register for Free</a>
+                            </div>
+                            <p class="text-center mt-6 text-gray-400">Already have an account? <a href="/login" class="text-cyan-400 hover:underline">Log in</a></p>
+                        </div>
+                    </section>
+                </div>
+            </main>
+            <footer class="relative z-10 bg-[#00001a] py-8 px-4 text-center text-gray-500"><p>&copy; 2024 Justax. All rights reserved.</p></footer>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const planetElements = new Map();
+            let animationFrameId;
+
+            const planetSystem = document.getElementById('planet-system');
+
+            const planetData = [
+                { id: 1, lang: 'English', speakers: 1500, flag: 'https://flagcdn.com/w40/gb.png', gradient: 'radial-gradient(circle, #a7c0d8, #2a5a8c)', glowColor: '#87CEEB', orbitRadiusX: 55, orbitRadiusY: 30, speed: 0.0006, initialAngle: 0 },
+                { id: 2, lang: 'Mandarin Chinese', speakers: 1120, flag: 'https://flagcdn.com/w40/cn.png', gradient: 'radial-gradient(circle, #FFD700, #B22222)', glowColor: '#FFD700', orbitRadiusX: 65, orbitRadiusY: 35, speed: -0.0005, initialAngle: 90 },
+                { id: 3, lang: 'Hindi', speakers: 602, flag: 'https://flagcdn.com/w40/in.png', gradient: 'radial-gradient(circle, #FF9933, #138808)', glowColor: '#FF9933', orbitRadiusX: 45, orbitRadiusY: 45, speed: 0.0007, initialAngle: 180 },
+                { id: 4, lang: 'Spanish', speakers: 548, flag: 'https://flagcdn.com/w40/es.png', gradient: 'radial-gradient(circle, #f7b400, #d62828)', glowColor: '#FAD100', orbitRadiusX: 70, orbitRadiusY: 50, speed: -0.00065, initialAngle: 270 },
+                { id: 5, lang: 'French', speakers: 274, flag: 'https://flagcdn.com/w40/fr.png', gradient: 'radial-gradient(circle, #0055A4, #EF4135)', glowColor: '#FFFFFF', orbitRadiusX: 75, orbitRadiusY: 55, speed: 0.0005, initialAngle: 45 },
+                { id: 6, lang: 'Standard Arabic', speakers: 274, flag: 'https://flagcdn.com/w40/sa.png', gradient: 'radial-gradient(circle, #006C35, #004B25)', glowColor: '#006C35', orbitRadiusX: 50, orbitRadiusY: 50, speed: -0.0008, initialAngle: 135 },
+                { id: 7, lang: 'Bengali', speakers: 272, flag: 'https://flagcdn.com/w40/bd.png', gradient: 'radial-gradient(circle, #006a4e, #f42a41)', glowColor: '#006a4e', orbitRadiusX: 60, orbitRadiusY: 55, speed: 0.00055, initialAngle: 225 },
+                { id: 8, lang: 'Russian', speakers: 258, flag: 'https://flagcdn.com/w40/ru.png', gradient: 'radial-gradient(circle, white, #d52b1e, #0039a6)', glowColor: 'white', orbitRadiusX: 78, orbitRadiusY: 40, speed: -0.0006, initialAngle: 315 },
+                { id: 9, lang: 'Portuguese', speakers: 257, flag: 'https://flagcdn.com/w40/pt.png', gradient: 'radial-gradient(circle, #006241, #ff0000)', glowColor: '#006241', orbitRadiusX: 82, orbitRadiusY: 46, speed: 0.00075, initialAngle: 75 },
+                { id: 10, lang: 'Urdu', speakers: 231, flag: 'https://flagcdn.com/w40/pk.png', gradient: 'radial-gradient(circle, #006600, #FFFFFF)', glowColor: '#FFFFFF', orbitRadiusX: 42, orbitRadiusY: 38, speed: -0.00085, initialAngle: 165 },
+                { id: 11, lang: 'Indonesian', speakers: 199, flag: 'https://flagcdn.com/w40/id.png', gradient: 'radial-gradient(circle, #ff0000, #FFFFFF)', glowColor: '#ff0000', orbitRadiusX: 58, orbitRadiusY: 58, speed: 0.0006, initialAngle: 205 },
+                { id: 12, lang: 'German', speakers: 134, flag: 'https://flagcdn.com/w40/de.png', gradient: 'radial-gradient(circle, #FFCE00, #DD0000, #000000)', glowColor: '#FFCE00', orbitRadiusX: 48, orbitRadiusY: 53, speed: -0.0005, initialAngle: 255 },
+                { id: 13, lang: 'Japanese', speakers: 125, flag: 'https://flagcdn.com/w40/jp.png', gradient: 'radial-gradient(circle, #FFFFFF 60%, #BC002D)', glowColor: 'white', orbitRadiusX: 40, orbitRadiusY: 35, speed: 0.0009, initialAngle: 345 },
+            ];
+    
+            const baseSize = 50;
+            const maxSize = 140;
+            const maxSpeakers = Math.max(...planetData.map(p => p.speakers));
+            
+            planetData.forEach(p => {
+                p.size = baseSize + (p.speakers / maxSpeakers) * (maxSize - baseSize);
+            });
+
+            if (planetSystem) {
+                planetSystem.innerHTML = '';
+                planetElements.clear();
+                
+                planetData.forEach(data => {
+                    const planetContainer = document.createElement('div');
+                    planetContainer.className = 'planet-container';
+                    planetContainer.style.setProperty('--size', `${data.size}px`);
+                    
+                    planetContainer.innerHTML = `
+                      <div class="planet-wrapper">
+                        <div class="planet-body" style="--planet-gradient: ${data.gradient}; --glow-color: ${data.glowColor};" title="${data.lang} - ${data.speakers}M speakers"></div>
+                        <div class="flag-container"><img src="${data.flag}" alt="${data.lang} Flag"></div>
+                      </div>
+                    `;
+                    
+                    planetSystem.appendChild(planetContainer);
+                    planetElements.set(data.id, planetContainer);
+                });
+            }
+
+            const animate = (time) => {
+                if (!planetSystem) return;
+                const systemWidth = planetSystem.clientWidth;
+                const systemHeight = planetSystem.clientHeight;
+                const centerX = systemWidth / 2;
+                const centerY = systemHeight / 2;
+
+                planetData.forEach(data => {
+                    const planetEl = planetElements.get(data.id);
+                    if (!planetEl) return;
+
+                    const angle = data.initialAngle * (Math.PI / 180) + time * data.speed;
+                    const x = centerX + (data.orbitRadiusX / 100 * systemWidth / 1.6) * Math.cos(angle) - (data.size || 0) / 2;
+                    const y = centerY + (data.orbitRadiusY / 100 * systemHeight / 1.6) * Math.sin(angle) - (data.size || 0) / 2;
+
+                    planetEl.style.transform = `translate(${x}px, ${y}px)`;
+                });
+                
+                animationFrameId = requestAnimationFrame(animate);
+            };
+
+            animationFrameId = requestAnimationFrame(animate);
+            
+            // --- Остальная логика без изменений ---
+
+            const starsBg = document.getElementById('stars-bg');
+            if (starsBg) {
+                starsBg.innerHTML = '';
+                for (let i = 0; i < 200; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.width = `${Math.random() * 2.5 + 1}px`;
+                    star.style.height = star.style.width;
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.top = `${Math.random() * 100}%`;
+                    star.style.animationDelay = `${Math.random() * 8}s`;
+                    star.style.animationDuration = `${Math.random() * 5 + 3}s`;
+                    star.style.opacity = `${Math.random() * 0.7 + 0.3}`;
+                    starsBg.appendChild(star);
+                }
+            }
+
+            const headline = document.getElementById('dynamic-headline');
+            const languages = ["Learn languages with AI", "Учи языки с ИИ", "Aprende idiomas с IA", "Lerne Sprachen mit KI", "Apprenez les langues avec l'IA", "AIで言語を学ぶ", "تعلم اللغات مع الذكاء الاصطناعي", "AI के साथ भाषाएँ सीखें", "学习语言与AI"];
+            let index = 0;
+            let intervalId = null;
+
+            if (headline) {
+                intervalId = setInterval(() => { 
+                    headline.classList.add('fade-out'); 
+                    setTimeout(() => { 
+                        index = (index + 1) % languages.length; 
+                        headline.textContent = languages[index]; 
+                        headline.classList.remove('fade-out'); 
+                    }, 500); 
+                }, 4000); 
+            }
+            
+            const observer = new IntersectionObserver((entries) => { 
+                entries.forEach(entry => { 
+                    if (entry.isIntersecting) { 
+                        entry.target.classList.add('is-visible'); 
+                    } 
+                }); 
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.fade-in-section').forEach(section => { 
+                observer.observe(section); 
+            });
+
+            // Очистка при перезагрузке или уходе со страницы (хотя для одного файла это не так критично)
+            window.addEventListener('beforeunload', () => {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+                observer.disconnect();
+            });
+        });
+    </script>
+
+</body>
+</html>
