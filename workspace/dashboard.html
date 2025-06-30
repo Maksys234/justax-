@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justax.Space - Dashboard</title>
+    <style>
+        /* ... (все ваши стили остаются без изменений) ... */
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&display=swap');
+
+        :root {
+            --primary-glow: rgba(180, 160, 255, 0.7);
+            --text-color: #EAEAEA;
+            --text-secondary: #b0b0b0;
+            --bg-color: #000;
+            --sidebar-bg: rgba(12, 5, 22, 0.7);
+            --card-bg: rgba(18, 9, 30, 0.6);
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Exo 2', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #video-bg {
+            position: fixed; top: 50%; left: 50%;
+            min-width: 100%; min-height: 100%;
+            z-index: -2;
+            transform: translateX(-50%) translateY(-50%);
+            filter: brightness(0.6);
+        }
+        
+        body::before {
+            content: ''; position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: -1;
+        }
+        #sidebar-container {
+            width: 260px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(25px) saturate(150%);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .sidebar-header .title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar-header .shimmer {
+            background: linear-gradient(125deg, #E6D8FF, #A079FF, #D5C6FF, #E6D8FF, #A079FF);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-size: 400% 400%; animation: shimmer 6s ease infinite;
+        }
+
+        @keyframes shimmer { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+        .nav-links {
+            list-style: none; padding: 0; margin: 0; flex-grow: 1;
+        }
+
+        .nav-links .nav-link {
+            display: block; padding: 15px 20px; color: var(--text-secondary);
+            text-decoration: none; border-radius: 8px; font-size: 1rem;
+            transition: background 0.3s, color 0.3s; margin-bottom: 10px;
+        }
+        
+        .nav-links .nav-link:hover {
+            background: rgba(180, 160, 255, 0.1); color: var(--text-color);
+        }
+
+        .nav-links .nav-link.active {
+            background: var(--primary-glow); color: #fff;
+            box-shadow: 0 0 15px rgba(180, 160, 255, 0.3);
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px; text-align: center;
+        }
+        
+        .user-profile { margin-bottom: 20px; }
+        .user-profile #sidebar-username { display: block; font-weight: 600; }
+        .user-profile #sidebar-useremail { font-size: 0.8rem; color: var(--text-secondary); }
+
+        .btn-logout {
+            width: 100%; padding: 10px; font-size: 1rem; font-family: 'Exo 2', sans-serif;
+            font-weight: 400; color: #fff; background: rgba(100, 80, 180, 0.5);
+            border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-logout:hover { background: rgba(110, 90, 190, 0.8); }
+
+        #main-content {
+            flex-grow: 1;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+        
+        .dashboard-header h1 { font-size: 3rem; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .info-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 25px; border-radius: 15px; }
+        .info-card h3 { font-size: 1.5rem; margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .detail { margin-bottom: 15px; }
+        .detail strong { display: block; color: var(--text-secondary); margin-bottom: 5px; }
+        .language-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+        .language-list li { background-color: rgba(180, 160, 255, 0.2); padding: 5px 12px; border-radius: 20px; }
+
+        #welcome-modal-backdrop {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 999;
+            display: flex;
+            align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #welcome-modal-backdrop.visible {
+            opacity: 1; pointer-events: all;
+        }
+
+        .modal-box {
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%; max-width: 500px;
+            text-align: center;
+        }
+
+        .modal-box h2 { font-size: 2rem; margin-top: 0; }
+        .modal-box p { color: var(--text-secondary); margin-bottom: 30px; }
+        
+        .modal-step { display: none; }
+        .modal-step.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .input-group {
+            position: relative; margin-bottom: 30px; text-align: left;
+        }
+
+        /* ✨ Стили для нового выпадающего списка */
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-family: 'Exo 2', sans-serif;
+            color: var(--text-color);
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .btn-modal {
+            display: block; width: 100%; padding: 14px; font-size: 16px;
+            font-weight: 400; color: #fff;
+            background: linear-gradient(145deg, rgba(100, 80, 180, 0.7), rgba(60, 40, 120, 0.8));
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
+            margin-top: 20px; transition: all 0.3s ease;
+        }
+        .btn-modal:hover { box-shadow: 0 0 25px var(--primary-glow); }
+        .btn-modal:disabled { background: rgba(60, 40, 120, 0.5); cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <video autoplay muted loop id="video-bg">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-interstellar-orbit-of-a-planet-in-space-39626-large.mp4" type="video/mp4">
+    </video>
+
+    <div id="sidebar-container"></div>
+
+    <main id="main-content">
+        <div class="dashboard-header">
+            <h1 id="welcome-message">Loading...</h1>
+            <p>Here's your personal information summary.</p>
+        </div>
+        <div class="info-grid">
+             <div class="info-card">
+                 <h3>User Profile</h3>
+                 <div class="detail"><strong>Nickname:</strong> <span id="user-nickname">...</span></div>
+                 <div class="detail"><strong>Email:</strong> <span id="user-email">...</span></div>
+                 <div class="detail"><strong>Date of Birth:</strong> <span id="user-dob">...</span></div>
+                 <div class="detail"><strong>Country:</strong> <span id="user-country">...</span></div>
+             </div>
+             <div class="info-card">
+                 <h3>Language Skills</h3>
+                 <div class="detail"><strong>Languages Known:</strong> <ul id="languages-known" class="language-list"><li>...</li></ul></div>
+                 <div class="detail"><strong>Languages to Learn:</strong> <ul id="languages-to-learn" class="language-list"><li>...</li></ul></div>
+             </div>
+        </div>
+    </main>
+
+    <div id="welcome-modal-backdrop">
+        <div class="modal-box">
+            <div id="modal-step-1" class="modal-step active">
+                <h2>Welcome to Justax.Space!</h2>
+                <p>To get started, please tell us which language you would like to learn.</p>
+                <div class="input-group">
+                    <select id="lang-to-learn-select">
+                        <option value="" disabled selected>Choose a language...</option>
+                    </select>
+                </div>
+                <button id="modal-next-btn" class="btn-modal">Next</button>
+            </div>
+            <div id="modal-step-2" class="modal-step">
+                <h2>Great! What is your native language?</h2>
+                <p>This will help us personalize your learning experience.</p>
+                 <div class="input-group">
+                    <select id="native-lang-select">
+                        <option value="" disabled selected>Choose a language...</option>
+                    </select>
+                </div>
+                <button id="modal-save-btn" class="btn-modal">Get Started</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Элементы UI ---
+            const welcomeMessage = document.getElementById('welcome-message');
+            const userNickname = document.getElementById('user-nickname');
+            const userEmail = document.getElementById('user-email');
+            const userDob = document.getElementById('user-dob');
+            const userCountry = document.getElementById('user-country');
+            const sidebarContainer = document.getElementById('sidebar-container');
+            
+            // --- Элементы модального окна ---
+            const modalBackdrop = document.getElementById('welcome-modal-backdrop');
+            const modalStep1 = document.getElementById('modal-step-1');
+            const modalStep2 = document.getElementById('modal-step-2');
+            const nextButton = document.getElementById('modal-next-btn');
+            const saveButton = document.getElementById('modal-save-btn');
+            const learnSelect = document.getElementById('lang-to-learn-select');
+            const nativeSelect = document.getElementById('native-lang-select');
+
+            // ✨ --- Шаг 1: Загрузка языков и заполнение списков ---
+            try {
+                const response = await fetch('/languages.json');
+                const languages = await response.json();
+                
+                // Функция для заполнения <select>
+                const populateSelect = (selectElement) => {
+                    languages.forEach(lang => {
+                        const option = document.createElement('option');
+                        option.value = lang;
+                        option.textContent = lang;
+                        selectElement.appendChild(option);
+                    });
+                };
+
+                populateSelect(learnSelect);
+                populateSelect(nativeSelect);
+
+            } catch (error) {
+                console.error("Failed to load languages.json", error);
+                alert("Could not load language list. Please refresh the page.");
+            }
+
+            // --- Загрузка сайдбара ---
+            try {
+                const response = await fetch('/workspace/sidebar.html');
+                sidebarContainer.innerHTML = await response.text();
+            } catch (error) { console.error('Error loading sidebar:', error); }
+
+            // --- Инициализация Supabase и получение данных ---
+            const SUPABASE_URL = 'https://yefycpbjwlwsaudqhjbq.supabase.co'; 
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllZnljcGJqd2x3c2F1ZHFoamJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMDgxNTQsImV4cCI6MjA2NjY4NDE1NH0.OZkdxE-om9B-_BngpB4FzmEa9K_Vfs5bJYoQpxmhLQU';
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+            if (sessionError || !session) {
+                window.location.href = '/auth/login.html';
+                return;
+            }
+            const user = session.user;
+
+            const { data: userData, error: userError } = await supabaseClient
+                .from('users').select('*').eq('id', user.id).single();
+
+            if (userError || !userData) {
+                welcomeMessage.textContent = 'Error loading profile.';
+                return;
+            }
+
+            // --- Функция заполнения UI ---
+            const populateUI = (data) => {
+                welcomeMessage.textContent = `Welcome, ${data.nickname || 'User'}!`;
+                userNickname.textContent = data.nickname || 'N/A';
+                userEmail.textContent = data.email || 'N/A';
+                userDob.textContent = data.date_of_birth || 'N/A';
+                userCountry.textContent = data.country || 'N/A';
+                
+                document.getElementById('sidebar-username').textContent = data.nickname || 'User';
+                document.getElementById('sidebar-useremail').textContent = data.email;
+
+                const fillLanguages = (elementId, languages) => {
+                    const list = document.getElementById(elementId);
+                    list.innerHTML = '';
+                    if (languages && languages.length > 0) {
+                        languages.forEach(lang => list.innerHTML += `<li>${lang}</li>`);
+                    } else {
+                        list.innerHTML = '<li>Not specified</li>';
+                    }
+                };
+                fillLanguages('languages-known', data.languages_known);
+                fillLanguages('languages-to-learn', data.languages_to_learn);
+            };
+            
+            populateUI(userData);
+
+            // --- Логика модального окна ---
+            if (!userData.languages_known || userData.languages_known.length === 0) {
+                modalBackdrop.classList.add('visible');
+            }
+            
+            nextButton.addEventListener('click', () => {
+                if (learnSelect.value === '') {
+                    alert('Please choose a language to learn.');
+                    return;
+                }
+                modalStep1.classList.remove('active');
+                modalStep2.classList.add('active');
+            });
+
+            saveButton.addEventListener('click', async () => {
+                if (nativeSelect.value === '') {
+                    alert('Please choose your native language.');
+                    return;
+                }
+                saveButton.disabled = true;
+                saveButton.textContent = 'Saving...';
+
+                const updates = {
+                    languages_to_learn: [learnSelect.value],
+                    languages_known: [nativeSelect.value]
+                };
+
+                const { data: updatedUserData, error } = await supabaseClient
+                    .from('users').update(updates).eq('id', user.id).select().single();
+
+                if (error) {
+                    alert('Error saving data: ' + error.message);
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'Get Started';
+                } else {
+                    modalBackdrop.classList.remove('visible');
+                    populateUI(updatedUserData);
+                }
+            });
+
+            document.getElementById('logout-button').addEventListener('click', async () => {
+                await supabaseClient.auth.signOut();
+                window.location.href = '/auth/login.html';
+            });
+        });
+    </script>
+</body>
+</html>
