@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justax.Space - Authentication</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&display=swap');
+
+        :root {
+            --primary-glow: rgba(180, 160, 255, 0.7);
+            --text-color: #EAEAEA;
+            --text-secondary: #b0b0b0;
+            --error-color: #ff9a9a;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Exo 2', sans-serif;
+            background-color: #000;
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #video-bg {
+            position: fixed;
+            top: 50%; left: 50%;
+            min-width: 100%; min-height: 100%;
+            width: auto; height: auto;
+            z-index: -2;
+            transform: translateX(-50%) translateY(-50%);
+            background-size: cover;
+            filter: brightness(0.6);
+        }
+        
+        body::before {
+            content: ''; position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: -1;
+        }
+
+        .main-container {
+            display: flex; width: 100%; height: 100vh;
+            align-items: center; justify-content: center;
+        }
+
+        .banner-section {
+            width: 50%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 50px; box-sizing: border-box;
+            text-align: center;
+        }
+
+        .banner-section .title {
+            font-size: 8vw; font-weight: 700;
+            line-height: 1.1; margin: 0; letter-spacing: 2px;
+        }
+
+        .banner-section .title .shimmer {
+            font-weight: 700;
+            background: linear-gradient(125deg, #E6D8FF, #A079FF, #D5C6FF, #E6D8FF, #A079FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 400% 400%;
+            animation: shimmer 6s ease infinite;
+            text-shadow: 0 0 25px rgba(180, 160, 255, 0.4);
+        }
+        
+        .banner-section .subtitle {
+            font-size: 1.2vw; font-weight: 300;
+            color: var(--text-secondary); margin-top: 20px;
+            max-width: 500px; line-height: 1.6;
+        }
+
+        @keyframes shimmer {
+            0%{background-position:0% 50%}
+            50%{background-position:100% 50%}
+            100%{background-position:0% 50%}
+        }
+
+        .form-section {
+             width: 50%; display: flex;
+             justify-content: center; align-items: center;
+        }
+
+        .form-box {
+            background: rgba(12, 5, 22, 0.7);
+            backdrop-filter: blur(25px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px; border-radius: 20px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            width: 100%; max-width: 400px;
+            max-height: 90vh; overflow-y: auto;
+        }
+        
+        .form-header {
+            text-align: center; font-size: 28px;
+            font-weight: 600; margin-bottom: 30px;
+            color: var(--text-color);
+        }
+
+        .form-container { display: none; }
+        .form-container.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .input-group {
+            position: relative; margin-bottom: 30px; text-align: left;
+        }
+
+        .input-group input {
+            width: 100%; padding: 10px 0; font-size: 16px; font-weight: 300;
+            color: var(--text-color); background-color: transparent; border: none; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); outline: none; transition: all .4s;
+        }
+        
+        /* Cтили для плейсхолдера даты */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8);
+        }
+        input[type="date"]::before {
+          content: attr(placeholder);
+          position: absolute;
+          color: var(--text-secondary);
+          display: block;
+          width: 100%;
+        }
+        input[type="date"]:valid::before {
+          display: none;
+        }
+
+
+        .input-group label {
+            position: absolute; top: 10px; left: 0; font-size: 16px; font-weight: 300;
+            color: var(--text-secondary); pointer-events: none; transition: all .4s;
+        }
+        
+        .input-group input:focus ~ label, .input-group input:valid ~ label {
+            top: -15px; left: 0; color: var(--primary-glow); font-size: 12px;
+        }
+        .input-group input:focus {
+             border-bottom-color: var(--primary-glow);
+        }
+        
+        .btn {
+            display: block; width: 100%; padding: 14px; font-size: 16px; font-family: 'Exo 2', sans-serif;
+            font-weight: 400; color: #fff;
+            background: linear-gradient(145deg, rgba(100, 80, 180, 0.7), rgba(60, 40, 120, 0.8));
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
+            margin-top: 20px; transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            box-shadow: 0 0 25px rgba(180, 160, 255, 0.4);
+            background: linear-gradient(145deg, rgba(110, 90, 190, 0.8), rgba(70, 50, 130, 0.9));
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            background: rgba(60, 40, 120, 0.5);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .form-switch-link {
+            text-align: center; margin-top: 20px; font-size: 14px; font-weight: 300;
+        }
+
+        .form-switch-link a {
+            color: #c3b4ff; text-decoration: none; transition: 0.3s;
+        }
+        .form-switch-link a:hover {
+            color: #fff; text-shadow: 0 0 5px var(--primary-glow);
+        }
+        
+        .alert-panel {
+            text-align: center; padding: 20px;
+            border: 1px solid var(--primary-glow);
+            border-radius: 8px;
+        }
+        .alert-panel p {
+            margin-top: 0;
+            color: var(--text-secondary);
+        }
+
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 900px) {
+            .main-container { flex-direction: column; }
+            .banner-section { display: none; }
+            .form-section { width: 100%; height: 100%; }
+        }
+
+    </style>
+</head>
+<body>
+    
+    <video autoplay muted loop id="video-bg">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-interstellar-orbit-of-a-planet-in-space-39626-large.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="main-container">
+        <div class="banner-section">
+            <h1 class="title">Justax<span class="shimmer">.Space</span></h1>
+            <p class="subtitle">
+                This is a placeholder for your project description. 
+                Connect, learn, and explore new horizons with a global community.
+            </p>
+        </div>
+
+        <div class="form-section">
+            <div class="form-box">
+                <div id="login-form" class="form-container active">
+                    <h2 class="form-header">Welcome Back</h2>
+                    <form id="login">
+                        <div class="input-group"><input type="email" id="login-email" required><label for="login-email">Email</label></div>
+                        <div class="input-group"><input type="password" id="login-password" required><label for="login-password">Password</label></div>
+                        <button type="submit" class="btn">Login</button>
+                        <div class="form-switch-link"><a href="#" id="show-forgot-password">Forgot password?</a></div>
+                        <div class="form-switch-link">No account? <a href="#" id="show-register">Create one</a></div>
+                    </form>
+                </div>
+
+                <div id="register-form" class="form-container">
+                    <h2 class="form-header">Create Account</h2>
+                     <form id="register">
+                        <div class="input-group"><input type="text" id="register-nickname" required><label for="register-nickname">Nickname</label></div>
+                        <div class="input-group"><input type="email" id="register-email" required><label for="register-email">Email</label></div>
+                        <div class="input-group"><input type="password" id="register-password" required><label for="register-password">Password</label></div>
+                        <div class="input-group"><input type="date" id="register-dob" required placeholder="YYYY-MM-DD"><label for="register-dob" style="top: -15px; font-size: 12px;">Date of Birth</label></div>
+                        <div class="input-group"><input type="text" id="register-country" required><label for="register-country">Country</label></div>
+                        <button type="submit" class="btn">Register</button>
+                        <div class="form-switch-link">Already have an account? <a href="#" id="show-login">Login</a></div>
+                    </form>
+                </div>
+                
+                <div id="forgot-password-form" class="form-container">
+                    <h2 class="form-header">Reset Password</h2>
+                    <form id="forgot-password">
+                        <p style="font-weight: 300; color: var(--text-secondary); margin-top: -15px; margin-bottom: 25px;">Enter your email to receive a reset link.</p>
+                        <div class="input-group"><input type="email" id="forgot-email" required><label for="forgot-email">Email</label></div>
+                        <button type="submit" class="btn">Send Link</button>
+                        <div class="form-switch-link"><a href="#" id="back-to-login">Back to Login</a></div>
+                    </form>
+                </div>
+
+                <div id="confirmation-notice" class="form-container">
+                    <div class="alert-panel">
+                        <h2 class="form-header" id="notice-header"></h2>
+                        <p id="notice-message"></p>
+                        <button id="resend-button" class="btn">Resend</button>
+                        <div class="form-switch-link">
+                            <a href="#" id="back-to-login-from-notice">Back to Login</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const forms = {
+                login: document.getElementById('login-form'),
+                register: document.getElementById('register-form'),
+                forgot: document.getElementById('forgot-password-form'),
+                notice: document.getElementById('confirmation-notice')
+            };
+            
+            const showForm = (formName) => {
+                Object.values(forms).forEach(form => form.classList.remove('active'));
+                forms[formName].classList.add('active');
+            };
+
+            document.getElementById('show-register').addEventListener('click', (e) => { e.preventDefault(); showForm('register'); });
+            document.getElementById('show-login').addEventListener('click', (e) => { e.preventDefault(); showForm('login'); });
+            document.getElementById('show-forgot-password').addEventListener('click', (e) => { e.preventDefault(); showForm('forgot'); });
+            document.getElementById('back-to-login').addEventListener('click', (e) => { e.preventDefault(); showForm('login'); });
+            document.getElementById('back-to-login-from-notice').addEventListener('click', (e) => { e.preventDefault(); showForm('login'); });
+
+            // --- Интеграция с Supabase ---
+            const SUPABASE_URL = 'https://yefycpbjwlwsaudqhjbq.supabase.co'; 
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllZnljcGJqd2x3c2F1ZHFoamJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMDgxNTQsImV4cCI6MjA2NjY4NDE1NH0.OZkdxE-om9B-_BngpB4FzmEa9K_Vfs5bJYoQpxmhLQU';
+
+            if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+                alert('Please replace supabase credentials in the HTML file.'); return;
+            }
+
+            const { createClient } = supabase;
+            const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            // --- Логика панели подтверждения ---
+            const noticeHeader = document.getElementById('notice-header');
+            const noticeMessage = document.getElementById('notice-message');
+            const resendButton = document.getElementById('resend-button');
+            let userEmailForResend = '';
+            let timerInterval;
+
+            const startCooldown = () => {
+                clearInterval(timerInterval);
+                resendButton.disabled = true;
+                let timeLeft = 60;
+                resendButton.textContent = `Resend in ${timeLeft}s`;
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    resendButton.textContent = `Resend in ${timeLeft}s`;
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        resendButton.disabled = false;
+                        resendButton.textContent = 'Resend';
+                    }
+                }, 1000);
+            };
+            
+            resendButton.addEventListener('click', async () => {
+                if (!userEmailForResend) return;
+                startCooldown();
+                await supabaseClient.auth.resend({
+                    type: 'signup',
+                    email: userEmailForResend
+                });
+                noticeMessage.textContent = 'A new confirmation link has been sent to your email.';
+            });
+
+            const showConfirmationNotice = (header, message, email) => {
+                userEmailForResend = email;
+                noticeHeader.textContent = header;
+                noticeMessage.textContent = message;
+                showForm('notice');
+            };
+
+            // --- Обработчик формы регистрации ---
+            const registerForm = document.getElementById('register');
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const nickname = document.getElementById('register-nickname').value;
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
+                const dob = document.getElementById('register-dob').value;
+                const country = document.getElementById('register-country').value;
+                
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+                if (error) { alert('Registration Error: ' + error.message); return; }
+
+                if (data.user) {
+                     const { error: insertError } = await supabaseClient
+                        .from('users').insert([ { id: data.user.id, nickname, email, date_of_birth: dob, country } ]);
+                    
+                    if (insertError) { alert('Error saving user data: ' + insertError.message); return; }
+                }
+                
+                // Показываем панель после успешной регистрации
+                showConfirmationNotice('Confirmation link sent', `A confirmation link has been sent to ${email}. Please check your inbox.`, email);
+                startCooldown(); // Запускаем кулдаун сразу
+            });
+
+            // --- Обработчик формы входа ---
+            const loginForm = document.getElementById('login');
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    if (error.message === 'Email not confirmed') {
+                        showConfirmationNotice('Email not confirmed', 'You must confirm your email address before logging in. Didn\'t receive the link?', email);
+                    } else {
+                        alert('Login Error: ' + error.message);
+                    }
+                } else {
+                    alert('Login successful!');
+                    // window.location.href = '/dashboard.html'; 
+                }
+            });
+            
+            // --- Обработчик формы сброса пароля ---
+            const forgotPasswordForm = document.getElementById('forgot-password');
+            forgotPasswordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('forgot-email').value;
+                const resetURL = window.location.origin + '/update-password.html';
+                const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: resetURL });
+                
+                if (error) { alert('Error: ' + error.message); } 
+                else { alert('Password reset link has been sent to your email!'); }
+            });
+        });
+    </script>
+</body>
+</html>
