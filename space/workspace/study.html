@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justax.Space - Study Hub</title>
+    <link rel="stylesheet" href="chat-styles.css">
+</head>
+<body>
+    <video autoplay muted loop id="video-bg">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-interstellar-orbit-of-a-planet-in-space-39626-large.mp4" type="video/mp4">
+    </video>
+
+    <div id="sidebar-container"></div>
+
+    <main id="main-content">
+        <div id="study-chat" class="chat-container">
+            <div id="chat-messages" class="chat-messages"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Напишите что-нибудь...">
+                <button id="chat-send-btn" class="btn-primary">Отправить</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase } from '/space/js/supabase-client.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const chatMessages = document.getElementById('chat-messages');
+            const chatInput = document.getElementById('chat-input');
+            const chatSendBtn = document.getElementById('chat-send-btn');
+            const sidebarContainer = document.getElementById('sidebar-container');
+            
+            let conversationHistory = [];
+            let systemPrompt = '';
+
+            async function initializePage() {
+                // --- Шаг 1: Загрузка сайдбара ---
+                try {
+                    const response = await fetch('/space/workspace/sidebar.html');
+                    sidebarContainer.innerHTML = await response.text();
+                } catch (error) { console.error('Error loading sidebar:', error); }
+                
+                // --- Шаг 2: Проверка сессии и пользователя ---
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return window.location.href = '/space/auth/login.html';
+                
+                const { data: userData, error: userError } = await supabase.from('users').select('*').eq('id', session.user.id).single();
+                if (userError || !userData) {
+                    addMessage('bot', 'Ошибка загрузки профиля...', false);
+                    return;
+                };
+
+                // --- Шаг 3: Заполнение сайдбара ---
+                const sidebarUsername = sidebarContainer.querySelector('#sidebar-username');
+                const sidebarUseremail = sidebarContainer.querySelector('#sidebar-useremail');
+                if (sidebarUsername) sidebarUsername.textContent = userData.nickname || 'User';
+                if (sidebarUseremail) sidebarUseremail.textContent = userData.email;
+                sidebarContainer.querySelector('.nav-links a[href="study.html"]')?.classList.add('active');
+                sidebarContainer.querySelector('#logout-button')?.addEventListener('click', async () => {
+                    await supabase.auth.signOut();
+                    window.location.href = '/space/auth/login.html';
+                });
+
+                // --- Шаг 4: Основная логика страницы ---
+                if (!userData.language_level) {
+                    addMessage('bot', 'Для начала необходимо оценить ваш уровень. Перенаправляем на страницу оценки...', false);
+                    setTimeout(() => window.location.href = '/space/workspace/assessment.html', 3000);
+                    return;
+                }
+
+                systemPrompt = getPracticePrompt(userData);
+                const langToLearn = userData.languages_to_learn[0];
+                addMessage('bot', `Привет! Давайте попрактикуемся в ${langToLearn}. Напишите мне что-нибудь, чтобы начать.`, false);
+                
+                chatSendBtn.addEventListener('click', handleUserMessage);
+                chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleUserMessage());
+            }
+
+            function addMessage(sender, text, addToHistory = true) {
+                 const messageDiv = document.createElement('div');
+                messageDiv.className = `chat-message ${sender}`;
+                messageDiv.innerHTML = `<div class="bubble">${text.replace(/\n/g, '<br>')}</div>`;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                if (addToHistory) {
+                    const role = sender === 'user' ? 'User' : 'AI';
+                    conversationHistory.push(`${role}: ${text}`);
+                }
+            }
+
+            function getPracticePrompt(userData) {
+                const langToLearn = userData.languages_to_learn[0];
+                const nativeLang = userData.languages_known[0];
+                return `**CRITICAL RULE: Your ENTIRE response MUST be in ${langToLearn}. DO NOT use English or any other language unless the user asks for a translation.**\nYou are a friendly AI language tutor. Your goal is to help a user practice ${langToLearn}. The user's level is ${userData.language_level}. Their hobbies are: ${userData.hobbies}. Your task is to be a practice partner and respond to the user's message below, keeping the conversation engaging.`;
+            }
+            
+            async function handleUserMessage() {
+                const userText = chatInput.value.trim();
+                if (!userText) return;
+                addMessage('user', userText);
+                chatInput.value = '';
+                
+                const fullPrompt = `${systemPrompt}\n\n**CONVERSATION HISTORY:**\n${conversationHistory.join('\n')}\n\n**USER'S LATEST MESSAGE:**\nUser: ${userText}`;
+                
+                const { data, error } = await supabase.functions.invoke('call-gemini', { body: { prompt: fullPrompt } });
+                if (error) { addMessage('bot', `Error: ${error.message}.`) }
+                else { addMessage('bot', data.text); }
+            }
+
+            initializePage();
+        });
+    </script>
+</body>
+</html>

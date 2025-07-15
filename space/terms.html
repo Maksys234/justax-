@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - Justax.Space</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&display=swap');
+
+        :root {
+            --primary-glow: rgba(180, 160, 255, 0.7);
+            --text-color: #EAEAEA;
+            --text-secondary: #b0b0b0;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Exo 2', sans-serif;
+            background-color: #000;
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden; /* Prevent body scroll, scrolling will be in the box */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+            box-sizing: border-box;
+        }
+
+        #video-bg {
+            position: fixed;
+            top: 50%; left: 50%;
+            min-width: 100%; min-height: 100%;
+            width: auto; height: auto;
+            z-index: -2;
+            transform: translateX(-50%) translateY(-50%);
+            background-size: cover;
+            filter: brightness(0.6);
+        }
+        
+        body::before {
+            content: ''; position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: -1;
+        }
+
+        .content-box {
+            background: rgba(12, 5, 22, 0.7);
+            backdrop-filter: blur(25px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 800px;
+            max-height: calc(100vh - 80px); /* Full height minus body padding */
+            overflow-y: auto; /* Enable scrolling for the content */
+            text-align: left;
+        }
+
+        /* Custom scrollbar for a better look */
+        .content-box::-webkit-scrollbar {
+            width: 8px;
+        }
+        .content-box::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        .content-box::-webkit-scrollbar-thumb {
+            background: var(--primary-glow);
+            border-radius: 10px;
+        }
+        .content-box::-webkit-scrollbar-thumb:hover {
+            background: rgba(180, 160, 255, 1);
+        }
+        
+        .content-box h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 30px;
+            color: var(--text-color);
+        }
+
+        .content-box h2 {
+            font-size: 1.8rem;
+            border-bottom: 1px solid var(--primary-glow);
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+
+        .content-box h3 {
+            font-size: 1.3rem;
+            color: #d1c4e9; /* A lighter shade of purple */
+            margin-top: 25px;
+        }
+
+        .content-box p, .content-box li {
+            font-weight: 300;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .content-box a {
+            color: #c3b4ff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .content-box a:hover {
+            color: #fff;
+            text-shadow: 0 0 5px var(--primary-glow);
+        }
+        
+        .content-box strong {
+            color: var(--text-color);
+            font-weight: 400;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+<body>
+    
+    <video autoplay muted loop id="video-bg">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-interstellar-orbit-of-a-planet-in-space-39626-large.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="content-box">
+        <h1>Terms of Service and Privacy Policy</h1>
+
+        <p><strong>Last Updated:</strong> July 15, 2024</p>
+        <p>Welcome to Justax.space! These Terms of Service and Privacy Policy ("Terms") constitute a legally binding agreement between you ("User," "you") and Justax.space ("we," "us," "the Service"). By using our website and services, you acknowledge that you have read, understood, and agree to be bound by these Terms. If you do not agree with them, please do not use our Service.</p>
+
+        <h2>1. Privacy Policy</h2>
+        <p>This policy explains what data we collect, how we use it, and with whom we share it.</p>
+
+        <h3>1.1. What Data We Collect</h3>
+        <ul>
+            <li><strong>Information Provided at Registration:</strong> Nickname, email address, date of birth, country of residence.</li>
+            <li><strong>Information for Personalizing Your Learning:</strong> Languages you know and wish to learn, and your hobbies or interests, if you provide them.</li>
+            <li><strong>Information Generated While Using the Service:</strong> The results of your language assessment, your determined proficiency level (e.g., A1, B2), and the complete history of your dialogues with our AI assistant.</li>
+            <li><strong>Automatically Collected Information:</strong> We may collect usage data like your IP address, browser type, and operating system. We also plan to use Google Analytics for anonymous visit statistics.</li>
+        </ul>
+
+        <h3>1.2. How We Use Your Data</h3>
+        <p>Your data is used exclusively for operating the Service, personalizing your learning, communicating with you, and improving the Service.</p>
+
+        <h3>1.3. Who We Share Your Data With</h3>
+        <p>We do not sell your data. We only share it with third parties essential for the Service to function:</p>
+        <ul>
+            <li><strong>Supabase:</strong> Our backend provider for database hosting and authentication.</li>
+            <li><strong>Google (Gemini/Google AI):</strong> Your chat queries and responses are sent to Google to generate AI responses.</li>
+            <li><strong>Brevo (Future):</strong> For sending email newsletters, if you subscribe.</li>
+            <li><strong>Google Analytics (Future):</strong> For analyzing anonymous site behavior.</li>
+        </ul>
+
+        <h3>1.4. Your Rights and Data Management</h3>
+        <p>In accordance with the GDPR, you have the right to access, rectify, and erase your data. To exercise these rights, please contact us at <a href="mailto:admin@justax.space">admin@justax.space</a>.</p>
+
+        <h2>2. Terms of Service</h2>
+
+        <h3>2.1. Age Restrictions</h3>
+        <p>The Service is intended for users who are at least 16 years old, or for users between 13 and 16 years old who have obtained consent from a parent or legal guardian.</p>
+
+        <h3>2.2. Intellectual Property</h3>
+        <p><strong>Our Content:</strong> All materials on the site are the property of Justax.space or are used under license. You may not copy or distribute them without our permission.</p>
+        <p><strong>Your Content:</strong> You retain all rights to the content you create. However, you grant us a license to use your content for the purpose of operating and improving the Service.</p>
+
+        <h3>2.3. Rules of Conduct and Prohibited Activities</h3>
+        <p>You agree not to use the Service for any illegal activities, distributing spam, harassment, attempting to hack the service, or any action that could disrupt its operation.</p>
+
+        <h3>2.4. Account Termination</h3>
+        <p>You may delete your account at any time. We reserve the right to suspend or terminate your account if you violate these Terms.</p>
+
+        <h3>2.5. Paid Services</h3>
+        <p>In the future, we may introduce paid services. The terms for such services will be presented separately.</p>
+
+        <h3>2.6. Disclaimers and Limitation of Liability</h3>
+        <p>The Service is provided "AS IS" and "AS AVAILABLE". We are not liable for any damages arising from its use. The language assessment provided by the AI is for informational purposes only. We reserve the right to modify, suspend, or discontinue the Service at any time.</p>
+
+        <h2>3. Cookie Policy</h2>
+        <p>We use strictly necessary cookies for site functionality (e.g., login sessions) and plan to use analytics cookies to improve our Service. You can manage cookies in your browser settings.</p>
+
+        <h2>4. Final Provisions</h2>
+        <p>We may change these Terms at any time. Your continued use of the Service after changes constitutes your acceptance. These Terms are governed by the laws of the Czech Republic. For any questions, please contact us at <a href="mailto:admin@justax.space">admin@justax.space</a>.</p>
+
+        <a href="auth/login.html" class="back-link">Back to Login</a>
+    </div>
+
+</body>
+</html>

@@ -145,6 +145,29 @@
              border-bottom-color: var(--primary-glow);
         }
         
+        /* ✨ НОВЫЕ СТИЛИ ДЛЯ ЧЕКБОКСА */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group input {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .checkbox-group label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        .checkbox-group a {
+            color: #c3b4ff;
+            text-decoration: none;
+        }
+        
         .btn {
             display: block; width: 100%; padding: 14px; font-size: 16px; font-family: 'Exo 2', sans-serif;
             font-weight: 400; color: #fff;
@@ -233,6 +256,12 @@
                         <div class="input-group"><input type="password" id="register-password" required><label for="register-password">Password</label></div>
                         <div class="input-group"><input type="date" id="register-dob" required placeholder="YYYY-MM-DD"><label for="register-dob" style="top: -15px; font-size: 12px;">Date of Birth</label></div>
                         <div class="input-group"><input type="text" id="register-country" required><label for="register-country">Country</label></div>
+                        
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="register-terms" required>
+                            <label for="register-terms">I agree to the <a href="../terms.html" target="_blank">Terms of Service</a></label>
+                        </div>
+                        
                         <button type="submit" class="btn">Register</button>
                         <div class="form-switch-link">Already have an account? <a href="#" id="show-login">Login</a></div>
                     </form>
@@ -266,6 +295,31 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Интеграция с Supabase ---
+            const SUPABASE_URL = 'https://yefycpbjwlwsaudqhjbq.supabase.co'; 
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllZnljcGJqd2x3c2F1ZHFoamJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMDgxNTQsImV4cCI6MjA2NjY4NDE1NH0.OZkdxE-om9B-_BngpB4FzmEa9K_Vfs5bJYoQpxmhLQU';
+
+            if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+                alert('Please replace supabase credentials in the HTML file.'); return;
+            }
+
+            const { createClient } = supabase;
+            const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            // ✨ НОВАЯ ФУНКЦИЯ: ПРОВЕРКА СЕССИИ И РЕДИРЕКТ
+            const checkSession = async () => {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session) {
+                    // Если пользователь авторизован, перенаправляем его на дашборд
+                    window.location.href = '../workspace/dashboard.html';
+                }
+            };
+            
+            // Вызываем проверку сразу при загрузке страницы
+            checkSession();
+
+
+            // --- Логика переключения форм ---
             const forms = {
                 login: document.getElementById('login-form'),
                 register: document.getElementById('register-form'),
@@ -284,16 +338,6 @@
             document.getElementById('back-to-login').addEventListener('click', (e) => { e.preventDefault(); showForm('login'); });
             document.getElementById('back-to-login-from-notice').addEventListener('click', (e) => { e.preventDefault(); showForm('login'); });
 
-            // --- Интеграция с Supabase ---
-            const SUPABASE_URL = 'https://yefycpbjwlwsaudqhjbq.supabase.co'; 
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllZnljcGJqd2x3c2F1ZHFoamJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMDgxNTQsImV4cCI6MjA2NjY4NDE1NH0.OZkdxE-om9B-_BngpB4FzmEa9K_Vfs5bJYoQpxmhLQU';
-
-            if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
-                alert('Please replace supabase credentials in the HTML file.'); return;
-            }
-
-            const { createClient } = supabase;
-            const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             // --- Логика панели подтверждения ---
             const noticeHeader = document.getElementById('notice-header');
@@ -356,9 +400,8 @@
                     if (insertError) { alert('Error saving user data: ' + insertError.message); return; }
                 }
                 
-                // Показываем панель после успешной регистрации
                 showConfirmationNotice('Confirmation link sent', `A confirmation link has been sent to ${email}. Please check your inbox.`, email);
-                startCooldown(); // Запускаем кулдаун сразу
+                startCooldown();
             });
 
             // --- Обработчик формы входа ---
@@ -377,7 +420,7 @@
                         alert('Login Error: ' + error.message);
                     }
                 } else {
-                    alert('Login successful!');
+                    // При успешном входе редирект сработает автоматически
                     window.location.href = '../workspace/dashboard.html'; 
                 }
             });
@@ -387,7 +430,8 @@
             forgotPasswordForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('forgot-email').value;
-                const resetURL = window.location.origin + '/update-password.html';
+                // ✨ ИСПРАВЛЕНИЕ ПУТИ: Убедимся, что путь к странице сброса пароля корректный
+                const resetURL = window.location.origin + '/space/auth/update-password.html';
                 const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: resetURL });
                 
                 if (error) { alert('Error: ' + error.message); } 

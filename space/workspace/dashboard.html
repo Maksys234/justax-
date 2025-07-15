@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Justax.Space - Dashboard</title>
     <style>
-        /* ... (все ваши стили остаются без изменений) ... */
         @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&display=swap');
-
         :root {
             --primary-glow: rgba(180, 160, 255, 0.7);
             --text-color: #EAEAEA;
@@ -17,103 +15,11 @@
             --card-bg: rgba(18, 9, 30, 0.6);
             --border-color: rgba(255, 255, 255, 0.1);
         }
-
-        body {
-            margin: 0;
-            font-family: 'Exo 2', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        #video-bg {
-            position: fixed; top: 50%; left: 50%;
-            min-width: 100%; min-height: 100%;
-            z-index: -2;
-            transform: translateX(-50%) translateY(-50%);
-            filter: brightness(0.6);
-        }
-        
-        body::before {
-            content: ''; position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.2);
-            z-index: -1;
-        }
-        #sidebar-container {
-            width: 260px;
-            height: 100vh;
-            background: var(--sidebar-bg);
-            backdrop-filter: blur(25px) saturate(150%);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .sidebar-header .title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .sidebar-header .shimmer {
-            background: linear-gradient(125deg, #E6D8FF, #A079FF, #D5C6FF, #E6D8FF, #A079FF);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-size: 400% 400%; animation: shimmer 6s ease infinite;
-        }
-
-        @keyframes shimmer { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-
-        .nav-links {
-            list-style: none; padding: 0; margin: 0; flex-grow: 1;
-        }
-
-        .nav-links .nav-link {
-            display: block; padding: 15px 20px; color: var(--text-secondary);
-            text-decoration: none; border-radius: 8px; font-size: 1rem;
-            transition: background 0.3s, color 0.3s; margin-bottom: 10px;
-        }
-        
-        .nav-links .nav-link:hover {
-            background: rgba(180, 160, 255, 0.1); color: var(--text-color);
-        }
-
-        .nav-links .nav-link.active {
-            background: var(--primary-glow); color: #fff;
-            box-shadow: 0 0 15px rgba(180, 160, 255, 0.3);
-        }
-
-        .sidebar-footer {
-            border-top: 1px solid var(--border-color);
-            padding-top: 20px; text-align: center;
-        }
-        
-        .user-profile { margin-bottom: 20px; }
-        .user-profile #sidebar-username { display: block; font-weight: 600; }
-        .user-profile #sidebar-useremail { font-size: 0.8rem; color: var(--text-secondary); }
-
-        .btn-logout {
-            width: 100%; padding: 10px; font-size: 1rem; font-family: 'Exo 2', sans-serif;
-            font-weight: 400; color: #fff; background: rgba(100, 80, 180, 0.5);
-            border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .btn-logout:hover { background: rgba(110, 90, 190, 0.8); }
-
-        #main-content {
-            flex-grow: 1;
-            height: 100vh;
-            overflow-y: auto;
-            padding: 40px;
-            box-sizing: border-box;
-        }
-        
+        body { margin: 0; font-family: 'Exo 2', sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
+        #video-bg { position: fixed; top: 50%; left: 50%; min-width: 100%; min-height: 100%; z-index: -2; transform: translateX(-50%) translateY(-50%); filter: brightness(0.6); }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); z-index: -1; }
+        #sidebar-container { width: 260px; height: 100vh; background: var(--sidebar-bg); backdrop-filter: blur(25px) saturate(150%); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; box-sizing: border-box; }
+        #main-content { flex-grow: 1; height: 100vh; overflow-y: auto; padding: 40px; box-sizing: border-box; }
         .dashboard-header h1 { font-size: 3rem; }
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .info-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 25px; border-radius: 15px; }
@@ -122,72 +28,22 @@
         .detail strong { display: block; color: var(--text-secondary); margin-bottom: 5px; }
         .language-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
         .language-list li { background-color: rgba(180, 160, 255, 0.2); padding: 5px 12px; border-radius: 20px; }
-
-        #welcome-modal-backdrop {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            z-index: 999;
-            display: flex;
-            align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        #welcome-modal-backdrop.visible {
-            opacity: 1; pointer-events: all;
-        }
-
-        .modal-box {
-            background: var(--sidebar-bg);
-            border: 1px solid var(--border-color);
-            padding: 40px;
-            border-radius: 20px;
-            width: 90%; max-width: 500px;
-            text-align: center;
-        }
-
+        #welcome-modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); z-index: 999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        #welcome-modal-backdrop.visible { opacity: 1; pointer-events: all; }
+        .modal-box { background: var(--sidebar-bg); border: 1px solid var(--border-color); padding: 40px; border-radius: 20px; width: 90%; max-width: 500px; text-align: center; }
         .modal-box h2 { font-size: 2rem; margin-top: 0; }
         .modal-box p { color: var(--text-secondary); margin-bottom: 30px; }
-        
         .modal-step { display: none; }
         .modal-step.active { display: block; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .input-group {
-            position: relative; margin-bottom: 30px; text-align: left;
-        }
-
-        /* ✨ Стили для нового выпадающего списка */
-        .input-group select {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            font-family: 'Exo 2', sans-serif;
-            color: var(--text-color);
-            background-color: rgba(0,0,0,0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            outline: none;
-            cursor: pointer;
-        }
-        
-        .btn-modal {
-            display: block; width: 100%; padding: 14px; font-size: 16px;
-            font-weight: 400; color: #fff;
-            background: linear-gradient(145deg, rgba(100, 80, 180, 0.7), rgba(60, 40, 120, 0.8));
-            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px;
-            cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
-            margin-top: 20px; transition: all 0.3s ease;
-        }
+        .input-group { position: relative; margin-bottom: 30px; text-align: left; }
+        .input-group select { width: 100%; padding: 12px; font-size: 16px; font-family: 'Exo 2', sans-serif; color: var(--text-color); background-color: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 8px; outline: none; cursor: pointer; }
+        .btn-modal { display: block; width: 100%; padding: 14px; font-size: 16px; font-weight: 400; color: #fff; background: linear-gradient(145deg, rgba(100, 80, 180, 0.7), rgba(60, 40, 120, 0.8)); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; margin-top: 20px; transition: all 0.3s ease; }
         .btn-modal:hover { box-shadow: 0 0 25px var(--primary-glow); }
         .btn-modal:disabled { background: rgba(60, 40, 120, 0.5); cursor: not-allowed; }
     </style>
 </head>
 <body>
-
     <video autoplay muted loop id="video-bg">
         <source src="https://assets.mixkit.co/videos/preview/mixkit-interstellar-orbit-of-a-planet-in-space-39626-large.mp4" type="video/mp4">
     </video>
@@ -230,7 +86,7 @@
             <div id="modal-step-2" class="modal-step">
                 <h2>Great! What is your native language?</h2>
                 <p>This will help us personalize your learning experience.</p>
-                 <div class="input-group">
+                <div class="input-group">
                     <select id="native-lang-select">
                         <option value="" disabled selected>Choose a language...</option>
                     </select>
@@ -240,18 +96,16 @@
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
+    <script type="module">
+        // ИСПРАВЛЕНИЕ: Путь теперь правильный, от корня сайта
+        import { supabase } from '/space/js/supabase-client.js';
+
         document.addEventListener('DOMContentLoaded', async () => {
-            // --- Элементы UI ---
             const welcomeMessage = document.getElementById('welcome-message');
             const userNickname = document.getElementById('user-nickname');
             const userEmail = document.getElementById('user-email');
             const userDob = document.getElementById('user-dob');
             const userCountry = document.getElementById('user-country');
-            const sidebarContainer = document.getElementById('sidebar-container');
-            
-            // --- Элементы модального окна ---
             const modalBackdrop = document.getElementById('welcome-modal-backdrop');
             const modalStep1 = document.getElementById('modal-step-1');
             const modalStep2 = document.getElementById('modal-step-2');
@@ -259,13 +113,37 @@
             const saveButton = document.getElementById('modal-save-btn');
             const learnSelect = document.getElementById('lang-to-learn-select');
             const nativeSelect = document.getElementById('native-lang-select');
-
-            // ✨ --- Шаг 1: Загрузка языков и заполнение списков ---
+            
+            // --- Загрузка сайдбара ---
+            const sidebarContainer = document.getElementById('sidebar-container');
             try {
-                const response = await fetch('/languages.json');
-                const languages = await response.json();
+                // ИСПРАВЛЕНИЕ: Используем относительный путь, так как файлы в одной папке
+                const response = await fetch('sidebar.html');
+                if (!response.ok) throw new Error('Network response was not ok');
+                sidebarContainer.innerHTML = await response.text();
                 
-                // Функция для заполнения <select>
+                // ИСПРАВЛЕНИЕ: Ищем элементы ВНУТРИ загруженного контейнера
+                const dashboardLink = sidebarContainer.querySelector('.nav-links a[href="/workspace/dashboard.html"]');
+                if (dashboardLink) {
+                    dashboardLink.classList.add('active');
+                }
+
+                const logoutButton = sidebarContainer.querySelector('#logout-button');
+                if (logoutButton) {
+                    logoutButton.addEventListener('click', async () => {
+                        await supabase.auth.signOut();
+                        // ИСПРАВЛЕНИЕ: Полный и правильный путь для редиректа
+                        window.location.href = '/space/auth/login.html';
+                    });
+                }
+            } catch (error) { console.error('Error loading sidebar:', error); }
+            
+            // --- Загрузка языков ---
+            try {
+                // ИСПРАВЛЕНИЕ: Полный и правильный путь к файлу
+                const response = await fetch('/space/languages.json');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const languages = await response.json();
                 const populateSelect = (selectElement) => {
                     languages.forEach(lang => {
                         const option = document.createElement('option');
@@ -274,38 +152,24 @@
                         selectElement.appendChild(option);
                     });
                 };
-
                 populateSelect(learnSelect);
                 populateSelect(nativeSelect);
-
             } catch (error) {
                 console.error("Failed to load languages.json", error);
-                alert("Could not load language list. Please refresh the page.");
             }
 
-            // --- Загрузка сайдбара ---
-            try {
-                const response = await fetch('/workspace/sidebar.html');
-                sidebarContainer.innerHTML = await response.text();
-            } catch (error) { console.error('Error loading sidebar:', error); }
-
-            // --- Инициализация Supabase и получение данных ---
-            const SUPABASE_URL = 'https://yefycpbjwlwsaudqhjbq.supabase.co'; 
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllZnljcGJqd2x3c2F1ZHFoamJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMDgxNTQsImV4cCI6MjA2NjY4NDE1NH0.OZkdxE-om9B-_BngpB4FzmEa9K_Vfs5bJYoQpxmhLQU';
-            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            
-            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-            if (sessionError || !session) {
-                window.location.href = '/auth/login.html';
+            // --- Инициализация и получение данных ---
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = '/space/auth/login.html';
                 return;
             }
             const user = session.user;
 
-            const { data: userData, error: userError } = await supabaseClient
-                .from('users').select('*').eq('id', user.id).single();
-
-            if (userError || !userData) {
-                welcomeMessage.textContent = 'Error loading profile.';
+            const { data: userData, error } = await supabase.from('users').select('*').eq('id', user.id).single();
+            if (error || !userData) {
+                console.error('Error loading profile:', error);
+                alert('Error loading profile.');
                 return;
             }
 
@@ -317,8 +181,11 @@
                 userDob.textContent = data.date_of_birth || 'N/A';
                 userCountry.textContent = data.country || 'N/A';
                 
-                document.getElementById('sidebar-username').textContent = data.nickname || 'User';
-                document.getElementById('sidebar-useremail').textContent = data.email;
+                // ИСПРАВЛЕНИЕ: Убеждаемся, что сайдбар загружен, прежде чем его заполнять
+                const sidebarUsername = sidebarContainer.querySelector('#sidebar-username');
+                const sidebarUseremail = sidebarContainer.querySelector('#sidebar-useremail');
+                if(sidebarUsername) sidebarUsername.textContent = data.nickname || 'User';
+                if(sidebarUseremail) sidebarUseremail.textContent = data.email;
 
                 const fillLanguages = (elementId, languages) => {
                     const list = document.getElementById(elementId);
@@ -341,19 +208,13 @@
             }
             
             nextButton.addEventListener('click', () => {
-                if (learnSelect.value === '') {
-                    alert('Please choose a language to learn.');
-                    return;
-                }
+                if (learnSelect.value === '') { alert('Please choose a language to learn.'); return; }
                 modalStep1.classList.remove('active');
                 modalStep2.classList.add('active');
             });
 
             saveButton.addEventListener('click', async () => {
-                if (nativeSelect.value === '') {
-                    alert('Please choose your native language.');
-                    return;
-                }
+                if (nativeSelect.value === '') { alert('Please choose your native language.'); return; }
                 saveButton.disabled = true;
                 saveButton.textContent = 'Saving...';
 
@@ -362,8 +223,7 @@
                     languages_known: [nativeSelect.value]
                 };
 
-                const { data: updatedUserData, error } = await supabaseClient
-                    .from('users').update(updates).eq('id', user.id).select().single();
+                const { data: updatedUserData, error } = await supabase.from('users').update(updates).eq('id', user.id).select().single();
 
                 if (error) {
                     alert('Error saving data: ' + error.message);
@@ -373,11 +233,6 @@
                     modalBackdrop.classList.remove('visible');
                     populateUI(updatedUserData);
                 }
-            });
-
-            document.getElementById('logout-button').addEventListener('click', async () => {
-                await supabaseClient.auth.signOut();
-                window.location.href = '/auth/login.html';
             });
         });
     </script>

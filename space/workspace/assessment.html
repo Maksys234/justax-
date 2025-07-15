@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Assessment - Justax.Space</title>
+    <link rel="stylesheet" href="chat-styles.css">
+</head>
+<body>
+    <video autoplay muted loop id="video-bg">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-interstellar-orbit-of-a-planet-in-space-39626-large.mp4" type="video/mp4">
+    </video>
+
+    <div id="sidebar-container"></div>
+
+    <main id="main-content">
+        <div id="assessment-chat" class="chat-container">
+            <div id="chat-messages" class="chat-messages"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Введите ваш ответ...">
+                <button id="chat-send-btn" class="btn-primary">Отправить</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase } from '/space/js/supabase-client.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const chatMessages = document.getElementById('chat-messages');
+            const chatInput = document.getElementById('chat-input');
+            const chatSendBtn = document.getElementById('chat-send-btn');
+            const sidebarContainer = document.getElementById('sidebar-container'); // Добавили контейнер
+
+            let question_count = 0;
+            let user_answers = [];
+            let system_prompt = '';
+            let lang_to_learn = '';
+            let native_lang = '';
+            let user_id = null;
+
+            async function initializeAssessment() {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return window.location.href = '/space/auth/login.html';
+                user_id = session.user.id;
+                
+                // ✨ ИСПРАВЛЕНИЕ: Добавлен блок загрузки и заполнения сайдбара
+                try {
+                    const response = await fetch('/space/workspace/sidebar.html');
+                    sidebarContainer.innerHTML = await response.text();
+                } catch (error) {
+                    console.error('Error loading sidebar:', error);
+                }
+
+                const { data: userData, error } = await supabase.from('users').select('*').eq('id', user_id).single();
+                if (error || !userData || !userData.languages_to_learn || userData.languages_to_learn.length === 0) {
+                    alert('Ошибка: не выбран язык для изучения. Перенаправляем на главную панель.');
+                    return window.location.href = '/space/workspace/dashboard.html';
+                }
+
+                // Заполняем данные в сайдбаре
+                const sidebarUsername = sidebarContainer.querySelector('#sidebar-username');
+                const sidebarUseremail = sidebarContainer.querySelector('#sidebar-useremail');
+                if (sidebarUsername) sidebarUsername.textContent = userData.nickname || 'User';
+                if (sidebarUseremail) sidebarUseremail.textContent = userData.email;
+                sidebarContainer.querySelector('#logout-button')?.addEventListener('click', async () => {
+                    await supabase.auth.signOut();
+                    window.location.href = '/space/auth/login.html';
+                });
+                // Конец блока исправления
+
+                lang_to_learn = userData.languages_to_learn[0];
+                native_lang = userData.languages_known[0];
+
+                addMessage('bot', `Начинаем оценку вашего уровня **${lang_to_learn}**. Я задам 10 вопросов. Пожалуйста, отвечайте на них. Первый вопрос уже в пути...`, false);
+                
+                await getNextQuestion();
+
+                chatSendBtn.addEventListener('click', handleUserResponse);
+                chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && handleUserResponse());
+            }
+
+            // ... (остальной JS код из прошлого ответа остается без изменений) ...
+
+            function addMessage(sender, text, addToHistory = true) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `chat-message ${sender}`;
+                messageDiv.innerHTML = `<div class="bubble">${text.replace(/\n/g, '<br>')}</div>`;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                if (addToHistory && sender === 'user') {
+                    user_answers.push(text);
+                }
+            }
+
+            async function getNextQuestion() {
+                chatInput.disabled = true;
+                chatSendBtn.disabled = true;
+                
+                if (question_count < 5) {
+                    system_prompt = `**CRITICAL RULE: Your ENTIRE response MUST be in ${lang_to_learn}. DO NOT use any other language.**\nAs a language assessor, ask the user question number ${question_count + 1} of 5 to evaluate their basic level in ${lang_to_learn}. The question must be open-ended. Ask only one question.`;
+                } else if (question_count < 10) {
+                    system_prompt = `**CRITICAL RULE: Your ENTIRE response MUST be in ${lang_to_learn}. DO NOT use any other language.**\nBased on the user's previous answers: "${user_answers.join('; ')}".\nAsk a more detailed question (number ${question_count - 4} of 5 in this new set) to better assess their proficiency in ${lang_to_learn}. Ask only one question.`;
+                } else {
+                    await finishAssessment();
+                    return;
+                }
+
+                const { data, error } = await supabase.functions.invoke('call-gemini', { body: { prompt: system_prompt } });
+                
+                if (error) {
+                    addMessage('bot', 'Произошла ошибка. Попробуйте обновить страницу.');
+                } else {
+                    addMessage('bot', data.text);
+                    question_count++;
+                }
+
+                chatInput.disabled = false;
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+            
+            async function handleUserResponse() {
+                const userText = chatInput.value.trim();
+                if (!userText || chatInput.disabled) return;
+                addMessage('user', userText);
+                chatInput.value = '';
+                await getNextQuestion();
+            }
+
+            async function finishAssessment() {
+                addMessage('bot', 'Спасибо за ответы! Анализирую ваш уровень...', false);
+                const final_prompt = `Based on this conversation transcript:\n${user_answers.map((a, i) => `Q${i+1}: AI's question\nA${i+1}: User's answer: "${a}"`).join('\n')}\n\nDetermine the user's CEFR level in ${lang_to_learn} (A1, A2, B1, B2, C1, or C2). Your response MUST be ONLY a valid JSON object like this: {"level": "B1", "reasoning": "Provide a brief reasoning in ${native_lang}"}.`;
+                
+                const { data, error } = await supabase.functions.invoke('call-gemini', { body: { prompt: final_prompt } });
+
+                if (error) {
+                    addMessage('bot', 'Не удалось завершить оценку. Попробуйте снова.');
+                    return;
+                }
+
+                try {
+                    const assessment = JSON.parse(data.text);
+                    if (assessment.level && assessment.reasoning) {
+                        await supabase.from('users').update({ language_level: assessment.level }).eq('id', user_id);
+                        addMessage('bot', `Оценка завершена!\n\n**Ваш уровень:** ${assessment.level}\n**Обоснование:** ${assessment.reasoning}\n\nЧерез 5 секунд вы будете перенаправлены на страницу обучения.`);
+                        setTimeout(() => window.location.href = '/space/workspace/study.html', 5000);
+                    } else { throw new Error('Invalid JSON format'); }
+                } catch (e) {
+                    addMessage('bot', 'Не удалось обработать результат оценки. Пожалуйста, попробуйте пройти оценку заново.');
+                }
+            }
+
+            initializeAssessment();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Justax.Space</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&display=swap');
+        :root {
+            --primary-glow: rgba(180, 160, 255, 0.7);
+            --text-color: #EAEAEA;
+            --text-secondary: #b0b0b0;
+            --bg-color: #000;
+            --sidebar-bg: rgba(12, 5, 22, 0.7);
+            --card-bg: rgba(18, 9, 30, 0.6);
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+        body { margin: 0; font-family: 'Exo 2', sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
+        #video-bg { position: fixed; top: 50%; left: 50%; min-width: 100%; min-height: 100%; z-index: -2; transform: translateX(-50%) translateY(-50%); filter: brightness(0.6); }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); z-index: -1; }
+        #sidebar-container { width: 260px; height: 100vh; background: var(--sidebar-bg); backdrop-filter: blur(25px) saturate(150%); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
+        #main-content { flex-grow: 1; height: 100vh; overflow-y: auto; padding: 40px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+        .content-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 40px; border-radius: 15px; text-align: center; }
+        .content-card h1 { font-size: 2.5rem; margin-top: 0; }
+        .content-card p { color: var(--text-secondary); font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+    <video autoplay muted loop id="video-bg">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-interstellar-orbit-of-a-planet-in-space-39626-large.mp4" type="video/mp4">
+    </video>
+    <div id="sidebar-container"></div>
+    <main id="main-content">
+        <div class="content-card">
+            <h1>Profile</h1>
+            <p>This page is under construction. 🚧</p>
+        </div>
+    </main>
+    <script type="module">
+        import { supabase } from '/space/js/supabase-client.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const sidebarContainer = document.getElementById('sidebar-container');
+            try {
+                const response = await fetch('/space/workspace/sidebar.html');
+                sidebarContainer.innerHTML = await response.text();
+                
+                // Подсветка активной ссылки
+                document.querySelector('.nav-links a[href="/space/workspace/profile.html"]').classList.add('active');
+                
+                // Проверка сессии и заполнение данных в сайдбаре
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    window.location.href = '/space/auth/login.html';
+                    return;
+                }
+                const { data: userData } = await supabase.from('users').select('nickname, email').eq('id', session.user.id).single();
+                if(userData) {
+                    document.getElementById('sidebar-username').textContent = userData.nickname || 'User';
+                    document.getElementById('sidebar-useremail').textContent = userData.email;
+                }
+
+                // Навешиваем обработчик на кнопку выхода
+                document.getElementById('logout-button').addEventListener('click', async () => {
+                    await supabase.auth.signOut();
+                    window.location.href = '/space/auth/login.html';
+                });
+
+            } catch (error) { 
+                console.error('Error initializing page:', error);
+            }
+        });
+    </script>
+</body>
+</html>
